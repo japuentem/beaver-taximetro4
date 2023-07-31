@@ -3,7 +3,16 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  firebaseConfig: {
+    apiKey: 'AIzaSyCqKCwvGznvt3KpnhEYGXtSxa_EBcR9edQ',
+    authDomain: 'taxi-app-60a66.firebaseapp.com',
+    projectId: 'taxi-app-60a66',
+    storageBucket: 'taxi-app-60a66.appspot.com',
+    messagingSenderId: '359899331593',
+    appId: '1:359899331593:web:6e69525c14b3656fecccd8',
+    measurementId: 'G-7FTPJ7TNN0',
+  },
 };
 
 /*

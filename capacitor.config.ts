@@ -5,8 +5,8 @@ const config: CapacitorConfig = {
   appName: 'beaver-taximetro4',
   webDir: 'www',
   server: {
-    androidScheme: 'https'
-  }
+    androidScheme: 'https',
+  },
 };
 
 export default config;

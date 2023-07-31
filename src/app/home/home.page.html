@@ -1,20 +1,155 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="title-container">
+    <div class="title-text">
+      <p>TAXIMETRO</p>
+    </div>
+  </div>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <div class="datetime-main">
+    <div class="datetime-container">
+      <div class="datetime-text"><p>{{ nuevaFecha }}</p></div>
+      <div class="datetime-text">
+        <p>{{ currentDateTime | date:'hh:mm:ss a' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cost-container">
+    <div class="message-container">
+      <div class="message-text">
+        <p
+          class="message-gps"
+          [ngStyle]="{'color': ubicacionActivada ? '#6abaa4' : 'red' }"
+        >
+          GPS
+        </p>
+        <p class="message-diurno">{{ tipoTarifa() ? 'DIURNO' : 'NOCTURNO'}}</p>
+      </div>
+    </div>
+
+    <div class="cost-center">
+      <h2 class="cost-text">
+        <span class="tarifa-number" *ngIf="viajeIniciado"
+          >{{ obtenerNumeroTarifa() }}</span
+        >
+        <span class="costo-number"
+          >{{ viajeTerminado || viajeIniciado ? costo_viaje.toFixed(2) : 'libre'
+          }}</span
+        >
+      </h2>
+    </div>
+
+    <div class="payment-container">
+      <div class="payment-text">
+        <p class="payment-label-left">
+          Distancia <span *ngIf="cobroPorDistancia">*</span>
+        </p>
+        <p class="payment-label-right">
+          Tiempo <span *ngIf="cobroPorTiempo">*</span>
+        </p>
+        <div style="clear: both"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-main">
+    <div class="button-container">
+      <ion-button
+        color="success"
+        expand="full"
+        (click)="iniciarViaje()"
+        [disabled]="viajeIniciado || viajeTerminado || !taxiSelected"
+      >
+        Iniciar
+      </ion-button>
+      <ion-button
+        color="danger"
+        expand="full"
+        (click)="terminarViaje()"
+        [disabled]="viajeTerminado || !viajeIniciado"
+      >
+        Terminar
+      </ion-button>
+      <ion-button
+        expand="full"
+        (click)="reiniciarTaximetro()"
+        [disabled]="viajeIniciado"
+      >
+        Reiniciar
+      </ion-button>
+    </div>
+  </div>
+
+  <div class="radio-container">
+    <ion-list>
+      <ion-radio-group [(ngModel)]="taxiSelected" (ionChange)="onRadioSelect()">
+        <ion-list-header>
+          <ion-label class="label-radio-title"
+            >Tipo de taxi que abordo</ion-label
+          >
+        </ion-list-header>
+
+        <ion-item>
+          <ion-radio
+            class="label-radio"
+            value="libre"
+            [disabled]="viajeIniciado || viajeTerminado"
+            >Libre</ion-radio
+          >
+        </ion-item>
+        <ion-item>
+          <ion-radio
+            class="label-radio"
+            value="sitio"
+            [disabled]="viajeIniciado || viajeTerminado"
+            >Sitio</ion-radio
+          >
+        </ion-item>
+        <ion-item>
+          <ion-radio
+            class="label-radio"
+            value="radio_taxi"
+            [disabled]="viajeIniciado || viajeTerminado"
+            >Radio Taxi</ion-radio
+          >
+        </ion-item>
+      </ion-radio-group>
+    </ion-list>
+  </div>
+
+  <div class="ticket-container" *ngIf="viajeTerminado">
+    <div class="ticket-detail">
+      <app-detalle-viaje
+        [tarifa]="tarifa.toFixed(2)"
+        [acumuladoTiempo]="acumuladoTiempo.toFixed(2)"
+        [acumuladoDistancia]="acumuladoDistancia.toFixed(2)"
+        [total]="total.toFixed(2)"
+      ></app-detalle-viaje>
+    </div>
+  </div>
+
+  <div>
+    <ion-button class="debug-button" (click)="setDebug()"
+      >Debuge mode</ion-button
+    >
+  </div>
+  <div class="debug-container" *ngIf="debugMode">
+    <div class="coordinates-container">
+      <div class="coordinates-text">
+        Last: {{ lastLatitude }}, {{ lastLongitude }}
+      </div>
+      <div class="coordinates-text">
+        Current: {{ currentLatitude }} , {{ currentLongitude }}
+      </div>
+      <div class="coordinates-text">
+        Distancia X Seg: {{ distanciaRecorridaSegundo.toFixed(2) }} mts.
+      </div>
+      <div class="coordinates-text">
+        Distancia Total: {{ distanciaRecorridaTotal.toFixed(2) }} mts.
+      </div>
+      <div class="coordinates-text">
+        Distance Traveled: {{ distanceTraveled.toFixed(2) }} mts.
+      </div>
+    </div>
   </div>
 </ion-content>
