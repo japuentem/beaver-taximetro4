@@ -61,6 +61,12 @@
         </p>
         <div style="clear: both"></div>
       </div>
+
+      <div class="payment-text">
+        <p class="payment-label-left">{{ distanceTraveled }}</p>
+        <p class="payment-label-right">{{ tiempoViajeFormatted }}</p>
+        <div style="clear: both"></div>
+      </div>
     </div>
   </div>
 
@@ -133,17 +139,6 @@
     </div>
   </div>
 
-  <!--   <div class="ticket-container" *ngIf="ticket && viajeTerminado">
-    <div class="ticket-detail">
-      <app-detalle-viaje
-        [tarifa]="tarifa.toFixed(2)"
-        [acumuladoTiempo]="acumuladoTiempo.toFixed(2)"
-        [acumuladoDistancia]="acumuladoDistancia.toFixed(2)"
-        [total]="total.toFixed(2)"
-      ></app-detalle-viaje>
-    </div>
-  </div> -->
-
   <div>
     <ion-button class="debug-button" (click)="setDebug()"
       >Debuge mode</ion-button
@@ -175,16 +170,16 @@
 <ion-footer>
   <div class="footer-main">
     <ion-buttons slot="start">
-      <ion-button (click)="mostrarTicket()" *ngIf="viajeTerminado">
+      <ion-button (click)="mostrarTicket()" [disabled]="!ticket">
         <ion-icon name="receipt-outline" size="large">Detalle viaje</ion-icon>
+      </ion-button>
+      <ion-button (click)="mostrarOpcionesApp()">
+        <ion-icon name="car-outline" size="large">Configuración</ion-icon>
       </ion-button>
       <ion-button (click)="acercaDe()">
         <ion-icon name="information-circle-outline" size="large"
           >Información</ion-icon
         >
-      </ion-button>
-      <ion-button (click)="mostrarOpcionesApp()">
-        <ion-icon name="settings-outline" size="large">Configuración</ion-icon>
       </ion-button>
     </ion-buttons>
   </div>

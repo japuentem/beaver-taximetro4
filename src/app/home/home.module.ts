@@ -7,9 +7,15 @@ import { HomePage } from './home.page';
 import { HomePageRoutingModule } from './home-routing.module';
 import { DetalleViajeComponent } from '../components/detalle-viaje/detalle-viaje.component';
 import { AcercaDeComponent } from '../components/acerca-de/acerca-de.component';
+import { InfoTarifasComponent } from '../components/info-tarifas/info-tarifas.component';
 
 @NgModule({
   imports: [CommonModule, FormsModule, IonicModule, HomePageRoutingModule],
-  declarations: [HomePage, DetalleViajeComponent, AcercaDeComponent],
+  declarations: [
+    HomePage,
+    DetalleViajeComponent,
+    AcercaDeComponent,
+    InfoTarifasComponent,
+  ],
 })
 export class HomePageModule {}

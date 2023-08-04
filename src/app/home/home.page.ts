@@ -9,6 +9,7 @@ import { StatusBar } from '@capacitor/status-bar';
 import { DetalleViajeComponent } from '../components/detalle-viaje/detalle-viaje.component'; // Asegúrate de colocar la ruta correcta
 import { AcercaDeComponent } from '../components/acerca-de/acerca-de.component'; // Asegúrate de colocar la ruta correcta
 import { ModalController } from '@ionic/angular';
+import { InfoTarifasComponent } from '../components/info-tarifas/info-tarifas.component';
 
 declare global {
   interface Navigator {
@@ -57,6 +58,10 @@ export class HomePage {
   velocidadKmXHr: number = 0;
   ticket: boolean = false;
 
+  tiempoViaje: number = 0;
+  tiempoViajeFormatted: string = '00:00:00';
+  intervaloTiempo: any;
+
   //   intervaloSimularMovimiento: any;
 
   constructor(
@@ -102,6 +107,13 @@ export class HomePage {
     this.tarifaInicial();
     this.iniciarTimerCostoTiempo();
     this.iniciarTimerCostoDistancia();
+
+    this.tiempoViaje = 0;
+    this.actualizarTiempoViajeFormatted();
+    this.intervaloTiempo = setInterval(() => {
+      this.tiempoViaje++;
+      this.actualizarTiempoViajeFormatted();
+    }, 1000);
   }
 
   terminarViaje() {
@@ -109,25 +121,27 @@ export class HomePage {
     this.taximetroService.terminarViaje();
     clearInterval(this.intervaloCostoTiempo);
     clearInterval(this.intervaloCostoDistancia);
+    clearInterval(this.intervaloTiempo);
     this.viajeIniciado = false;
     this.viajeTerminado = true;
     this.vecesTiempo = 0;
     this.vecesDistancia = 0;
     this.detenerCurrentPosition();
-    this.ticket = false;
+    this.ticket = true;
     // clearInterval(this.intervaloSimularMovimiento);
   }
 
   reiniciarTaximetro() {
     this.viajeIniciado = false;
     this.viajeTerminado = false;
+    this.ticket = false;
     this.taxiSelected = null;
     this.costo_viaje = 0;
     this.lastLatitude = 0;
     this.lastLongitude = 0;
     this.currentLatitude = 0;
     this.currentLongitude = 0;
-    // this.lastDistance = 0;
+    this.tiempoViaje = 0;
     this.cobroPorTiempo = false;
     this.cobroPorDistancia = false;
     this.distanciaRecorridaSegundo = 0;
@@ -136,7 +150,7 @@ export class HomePage {
     clearInterval(this.intervaloCostoDistancia);
     this.acumuladoTiempo = 0;
     this.acumuladoDistancia = 0;
-    this.ticket = false;
+    this.actualizarTiempoViajeFormatted();
   }
 
   tipoTarifa(): boolean {
@@ -238,13 +252,6 @@ export class HomePage {
         const velocidadKmPorHora =
           distanciaRecorridaKm / (tiempoTranscurridoSegundos / 3600);
 
-        console.log('distanciaRecorridaKm: ', distanciaRecorridaKm);
-        console.log(
-          'tiempoTranscurridoSegundos: ',
-          tiempoTranscurridoSegundos / 3600
-        );
-        console.log('velocidadKmPorHora: ', velocidadKmPorHora);
-
         this.velocidadKmXHr = velocidadKmPorHora;
         // Guardar el tiempo actual como referencia para el próximo cálculo de velocidad
         this.lastUpdateTime = new Date().getTime();
@@ -268,14 +275,11 @@ export class HomePage {
           this.lastLongitude = this.currentLongitude;
         }
 
-        // Actualiza el valor de distanciaRecorridaTotal con el valor de distanceTraveled del objeto emitido
-        // this.distanciaRecorridaTotal = positionData.distanceTraveled;
-        // this.textoCoordenadas = positionData.distanceTraveled;
         this.distanciaRecorridaSegundo += positionData.distanceTraveled;
         this.distanciaRecorridaTotal += positionData.distanceTraveled;
 
         // if (this.distanciaRecorridaSegundo >= 242) {
-        if (this.distanceTraveled >= 242) {
+        if (this.distanceTraveled >= 250) {
           this.validarTarifa(1);
           this.costo_viaje += this.aumento;
           this.vecesDistancia++;
@@ -372,10 +376,11 @@ export class HomePage {
         acumuladoTiempo: this.acumuladoTiempo.toFixed(2),
         acumuladoDistancia: this.acumuladoDistancia.toFixed(2),
         total: this.total.toFixed(2),
+        distanceTraveled: this.distanceTraveled,
+        tiempoViajeFormatted: this.tiempoViajeFormatted,
       },
     });
 
-    // Muestra el modal
     await modal.present();
   }
 
@@ -384,12 +389,28 @@ export class HomePage {
       component: AcercaDeComponent,
     });
 
-    // Muestra el modal
     await modal.present();
   }
 
-  // Método para mostrar opciones de la app
-  mostrarOpcionesApp() {
-    // Implementa la lógica para mostrar las opciones de la app aquí
+  async mostrarOpcionesApp() {
+    const modal = await this.modalController.create({
+      component: InfoTarifasComponent,
+    });
+
+    await modal.present();
+  }
+
+  private actualizarTiempoViajeFormatted() {
+    const hours = Math.floor(this.tiempoViaje / 3600);
+    const minutes = Math.floor((this.tiempoViaje % 3600) / 60);
+    const seconds = this.tiempoViaje % 60;
+
+    this.tiempoViajeFormatted = `${this.padZero(hours)}:${this.padZero(
+      minutes
+    )}:${this.padZero(seconds)}`;
+  }
+
+  private padZero(value: number): string {
+    return value < 10 ? `0${value}` : value.toString();
   }
 }

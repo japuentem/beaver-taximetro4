@@ -1,11 +1,27 @@
+.ticket-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
 .detalle-viaje {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
   text-align: center;
   background-color: white;
+  width: 80%;
+  padding: 20px;
+  border: 3px dotted #000;
 }
 
 .titulo {
   font-size: 20px;
   font-weight: bold;
+  text-decoration: underline;
+  color: #a12144;
 }
 
 .item {
@@ -16,4 +32,14 @@
   margin-top: 20px;
   font-size: 18px;
   font-weight: bold;
+  color: #a12144;
+}
+
+.regresar-container {
+  margin-top: 10px; /* Agregamos margen superior para separar del contenedor anterior */
+  text-align: center;
+}
+
+.regresar-container .boton-regresar {
+  margin-top: 10px; /* Agregamos un margen superior al botón para espaciarlo dentro del contenedor */
 }

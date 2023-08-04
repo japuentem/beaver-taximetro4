@@ -88,22 +88,22 @@
   font-family: "DSDIGI", "Roboto";
 }
 .cost-center {
-  padding: 0;
-  width: 95%;
   display: flex;
   justify-content: center;
   flex-direction: row;
+  padding: 0;
+  width: 95%;
 }
 
 .tarifa-number {
   text-align: left;
   justify-content: center;
   margin-right: 75px;
-  font-size: 85px;
+  font-size: 70px;
 }
 .costo-number {
   text-align: center;
-  font-size: 85px;
+  font-size: 70px;
 }
 
 .speed-container {
@@ -139,7 +139,7 @@
   white-space: nowrap;
   padding-right: 10px;
   font-weight: bold;
-  padding: 5px;
+  padding-bottom: 2px;
 }
 .payment-label-right {
   margin: 20px;
@@ -150,7 +150,7 @@
   white-space: nowrap;
   padding-left: 10px;
   font-weight: bold;
-  padding: 5px;
+  padding-bottom: 2px;
 }
 
 .button-main {
@@ -158,14 +158,15 @@
   justify-content: center;
   flex-direction: row;
   width: 100%;
+  margin-top: 10px;
 }
 .button-container {
   display: flex;
   justify-content: space-between;
   flex-direction: row;
   align-items: center;
-  margin-top: 20px;
-  width: 90%;
+  width: 100%;
+  padding: 5px 0;
 }
 
 .ticket-container {

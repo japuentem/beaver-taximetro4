@@ -10,6 +10,8 @@ export class DetalleViajeComponent {
   @Input() tarifa: string = '';
   @Input() acumuladoTiempo: string = '';
   @Input() acumuladoDistancia: string = '';
+  @Input() distanceTraveled: string = '';
+  @Input() tiempoViajeFormatted: string = '';
   @Input() total: string = '';
   // @Output() regresarHomePageEvent = new EventEmitter<void>(); // Evento para regresar a HomePage
 
