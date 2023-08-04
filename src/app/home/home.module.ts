@@ -6,9 +6,10 @@ import { HomePage } from './home.page';
 
 import { HomePageRoutingModule } from './home-routing.module';
 import { DetalleViajeComponent } from '../components/detalle-viaje/detalle-viaje.component';
+import { AcercaDeComponent } from '../components/acerca-de/acerca-de.component';
 
 @NgModule({
   imports: [CommonModule, FormsModule, IonicModule, HomePageRoutingModule],
-  declarations: [HomePage, DetalleViajeComponent],
+  declarations: [HomePage, DetalleViajeComponent, AcercaDeComponent],
 })
 export class HomePageModule {}

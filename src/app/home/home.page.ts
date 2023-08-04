@@ -4,6 +4,19 @@ import { TarifaService } from '../services/tarifa-service.service';
 import { TaximetroService } from '../services/taximetro-service.service';
 import { GPSLocationService } from '../services/gps-location-service.service';
 import { MiscellaneousService } from '../services/miscellaneous-service.service';
+import { Platform } from '@ionic/angular';
+import { StatusBar } from '@capacitor/status-bar';
+import { DetalleViajeComponent } from '../components/detalle-viaje/detalle-viaje.component'; // Asegúrate de colocar la ruta correcta
+import { AcercaDeComponent } from '../components/acerca-de/acerca-de.component'; // Asegúrate de colocar la ruta correcta
+import { ModalController } from '@ionic/angular';
+
+declare global {
+  interface Navigator {
+    app: {
+      exitApp: () => void;
+    };
+  }
+}
 
 @Component({
   selector: 'app-home',
@@ -40,8 +53,10 @@ export class HomePage {
   currentLongitude: number = 0;
   debugMode: boolean = false;
   distanceTraveled: number = 0;
+  lastUpdateTime: number = 0;
+  velocidadKmXHr: number = 0;
+  ticket: boolean = false;
 
-  // textoCoordenadas: string = '';
   //   intervaloSimularMovimiento: any;
 
   constructor(
@@ -49,11 +64,14 @@ export class HomePage {
     private tarifaService: TarifaService,
     private taximetroService: TaximetroService,
     private gpsLocationService: GPSLocationService,
-    private miscellaneousService: MiscellaneousService // private alertController: AlertController
+    private miscellaneousService: MiscellaneousService, // private alertController: AlertController
+    private platform: Platform,
+    private modalController: ModalController
   ) {
     this.currentDateTime = new Date();
     this.nuevaFecha = this.dateTimeService.convertirFecha(this.currentDateTime);
     this.checkUbicacionActivada();
+    this.initializeApp();
   }
 
   async ngOnInit() {
@@ -76,6 +94,7 @@ export class HomePage {
   iniciarViaje() {
     this.viajeIniciado = true;
     this.viajeTerminado = false;
+    this.ticket = false;
     this.distanciaRecorridaSegundo = 0;
     this.distanciaRecorridaTotal = 0;
 
@@ -95,6 +114,7 @@ export class HomePage {
     this.vecesTiempo = 0;
     this.vecesDistancia = 0;
     this.detenerCurrentPosition();
+    this.ticket = false;
     // clearInterval(this.intervaloSimularMovimiento);
   }
 
@@ -116,6 +136,7 @@ export class HomePage {
     clearInterval(this.intervaloCostoDistancia);
     this.acumuladoTiempo = 0;
     this.acumuladoDistancia = 0;
+    this.ticket = false;
   }
 
   tipoTarifa(): boolean {
@@ -208,6 +229,25 @@ export class HomePage {
         this.lastLongitude = positionData.lastLongitude;
         this.currentLatitude = positionData.currentLatitude;
         this.currentLongitude = positionData.currentLongitude;
+        this.distanceTraveled = positionData.distanceTraveled;
+
+        // Calcular velocidad en km/hr
+        const tiempoTranscurridoSegundos =
+          (new Date().getTime() - this.lastUpdateTime) / 1000; // Convertir a segundos
+        const distanciaRecorridaKm = this.distanceTraveled / 1000; // Convertir a kilómetros
+        const velocidadKmPorHora =
+          distanciaRecorridaKm / (tiempoTranscurridoSegundos / 3600);
+
+        console.log('distanciaRecorridaKm: ', distanciaRecorridaKm);
+        console.log(
+          'tiempoTranscurridoSegundos: ',
+          tiempoTranscurridoSegundos / 3600
+        );
+        console.log('velocidadKmPorHora: ', velocidadKmPorHora);
+
+        this.velocidadKmXHr = velocidadKmPorHora;
+        // Guardar el tiempo actual como referencia para el próximo cálculo de velocidad
+        this.lastUpdateTime = new Date().getTime();
         /*
         this.intervaloSimularMovimiento = setInterval(() => {
           const simulatedPosition = this.miscellaneousService.simularMovimiento(
@@ -231,11 +271,11 @@ export class HomePage {
         // Actualiza el valor de distanciaRecorridaTotal con el valor de distanceTraveled del objeto emitido
         // this.distanciaRecorridaTotal = positionData.distanceTraveled;
         // this.textoCoordenadas = positionData.distanceTraveled;
-        this.distanceTraveled = positionData.distanceTraveled;
         this.distanciaRecorridaSegundo += positionData.distanceTraveled;
         this.distanciaRecorridaTotal += positionData.distanceTraveled;
 
-        if (this.distanciaRecorridaSegundo >= 242) {
+        // if (this.distanciaRecorridaSegundo >= 242) {
+        if (this.distanceTraveled >= 242) {
           this.validarTarifa(1);
           this.costo_viaje += this.aumento;
           this.vecesDistancia++;
@@ -309,5 +349,47 @@ export class HomePage {
 
   setDebug() {
     this.debugMode = this.miscellaneousService.setDebug(this.debugMode);
+  }
+
+  initializeApp() {
+    this.platform.backButton.subscribeWithPriority(10, () => {
+      navigator['app'].exitApp();
+    });
+
+    this.platform.ready().then(() => {
+      if (this.platform.is('android') && this.platform.is('capacitor')) {
+        // Change the status bar color
+        StatusBar.setBackgroundColor({ color: '#d9176e' }); // Replace with your desired color
+      }
+    });
+  }
+
+  async mostrarTicket() {
+    const modal = await this.modalController.create({
+      component: DetalleViajeComponent,
+      componentProps: {
+        tarifa: this.tarifa.toFixed(2),
+        acumuladoTiempo: this.acumuladoTiempo.toFixed(2),
+        acumuladoDistancia: this.acumuladoDistancia.toFixed(2),
+        total: this.total.toFixed(2),
+      },
+    });
+
+    // Muestra el modal
+    await modal.present();
+  }
+
+  async acercaDe() {
+    const modal = await this.modalController.create({
+      component: AcercaDeComponent,
+    });
+
+    // Muestra el modal
+    await modal.present();
+  }
+
+  // Método para mostrar opciones de la app
+  mostrarOpcionesApp() {
+    // Implementa la lógica para mostrar las opciones de la app aquí
   }
 }

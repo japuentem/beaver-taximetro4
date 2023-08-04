@@ -1,3 +1,16 @@
+.header-container {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background-color: #d9176e;
+}
+.header-text {
+  color: #fff;
+  font-size: 30px;
+  font-weight: bold;
+  font-family: "TAXI", "Roboto";
+  background-color: #d9176e;
+}
 .title-container {
   display: flex;
   justify-content: center;
@@ -155,39 +168,6 @@
   width: 90%;
 }
 
-ion-radio {
-  --border-radius: 4px;
-  --inner-border-radius: 4px;
-
-  --color: #ddd;
-  --color-checked: #d9176e;
-}
-.radio-container {
-  gap: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin: 20px 20px 20px 0;
-}
-.label-radio-title {
-  color: #fff;
-  background-color: #d9176e;
-  font-weight: bold;
-  font-size: large;
-  padding: 5px;
-}
-.label-radio {
-  color: #d9176e;
-}
-.radio-container ion-list {
-  padding: 0;
-  gap: 0;
-}
-.radio-container ion-list ion-item ion-radio {
-  padding: 0;
-  margin: 0;
-  border-bottom: 2px dotted #d9176e;
-}
-
 .ticket-container {
   display: flex;
   justify-content: center;
@@ -231,6 +211,64 @@ ion-radio {
   src: url("../../assets/fonts/TaxiDriver.ttf");
 }
 
-textarea {
-  width: 90%;
+ion-radio {
+  --border-radius: 4px;
+  --inner-border-radius: 4px;
+
+  --color: #ddd;
+  --color-checked: #d9176e;
+}
+.radio-border {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  margin: 10px 0;
+}
+.radio-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 95%;
+}
+.radio-group-inline {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #d9176e;
+  width: 95%;
+}
+.label-radio-title {
+  font-weight: bold;
+  font-size: large;
+  padding: 5px;
+  margin: 5px 0;
+  width: 95%;
+  background-color: #d9176e;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
+.radio-text-selected {
+  color: #d9176e; /* Cambiar el color del texto al seleccionar */
+}
+.radio-item ion-radio {
+  margin-right: 5px; /* Ajusta el valor según tus preferencias */
+}
+.radio-item ion-label {
+  margin-left: 5px; /* Ajusta el valor según tus preferencias */
+}
+
+.footer-main {
+  display: flex;
+  justify-content: space-evenly; /* Distribuye los elementos con espaciado alrededor */
+  align-items: center; /* Centra los elementos verticalmente en el footer */
+  padding: 10px;
+  background-color: #d9176e;
+  color: #fff;
+}
+ion-button {
+  /* Agrega espaciado entre los botones, puedes ajustar el valor según tu preferencia */
+  margin: 0 10px;
 }

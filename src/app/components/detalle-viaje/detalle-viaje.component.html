@@ -1,3 +1,19 @@
-<p>
-  detalle-viaje works!
-</p>
+<div class="detalle-viaje">
+  <p class="titulo">Ticket</p>
+  <hr />
+  <p class="item">
+    Banderazo: <span>$ {{ tarifa }}</span>
+  </p>
+  <p class="item">
+    $ Tiempo:
+    <span>$ {{ acumuladoTiempo }}</span>
+  </p>
+  <p class="item">
+    $ Distancia: <span>$ {{ acumuladoDistancia }}</span>
+  </p>
+  <hr />
+  <p class="total">
+    Total: <span>{{ total }}</span>
+  </p>
+  <ion-button (click)="onRegresarHomePage()">Regresar</ion-button>
+</div>
