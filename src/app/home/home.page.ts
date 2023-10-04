@@ -430,38 +430,4 @@ export class HomePage {
 
     this.lastUpdateTime = Date.now();
   }
-
-  generateMonthlyReport() {
-    const trips = JSON.parse(localStorage.getItem('trips') || '[]');
-
-    // Filter trips for the current month
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-
-    const filteredTrips = trips.filter((trip) => {
-      const tripDate = new Date(trip.time);
-      return (
-        tripDate.getMonth() === currentMonth &&
-        tripDate.getFullYear() === currentYear
-      );
-    });
-
-    // Calculate total distance and time for the month
-    let totalDistance = 0;
-    let totalTime = 0;
-
-    filteredTrips.forEach((trip: { type: string; distance: number }) => {
-      if (trip.type === 'distance') {
-        totalDistance += trip.distance;
-      } else {
-        // Assuming you have a way to calculate time for each trip
-        totalTime += calculateTimeForTrip(trip);
-      }
-    });
-
-    // Display or return the totalDistance and totalTime as needed
-    console.log('Total Distance for the Month:', totalDistance);
-    console.log('Total Time for the Month:', totalTime);
-  }
 }

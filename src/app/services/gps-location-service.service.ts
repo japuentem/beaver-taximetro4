@@ -100,7 +100,7 @@ export class GPSLocationService {
         timeout: 10000,
       };
 
-      const DISTANCE_THRESHOLD_IN_METERS = 5;
+      const DISTANCE_THRESHOLD_IN_METERS = 10;
       const DEGREES_PER_METER = 1 / (111 * 1000);
       const DISTANCE_THRESHOLD_IN_DEGREES =
         DISTANCE_THRESHOLD_IN_METERS * DEGREES_PER_METER;
@@ -156,11 +156,11 @@ export class GPSLocationService {
       };
     });
   }
-
+  /*
   degToRad(degrees: number): number {
     return degrees * (Math.PI / 180);
   }
-
+ */
   calcularVelocidad(distancia: number, tiempo: number): number {
     // tiempo en horas
     const velocidad = distancia / tiempo; // Velocidad en kilómetros por hora

@@ -5,12 +5,6 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- <div class="title-container">
-    <div class="title-text">
-      <p>TAXIMETRO</p>
-    </div>
-  </div> -->
-
   <div class="datetime-main">
     <div class="datetime-container">
       <div class="datetime-text"><p>{{ nuevaFecha }}</p></div>
@@ -35,7 +29,7 @@
 
     <div class="cost-center">
       <h2 class="cost-text">
-        <span class="tarifa-number" *ngIf="viajeIniciado">
+        <span class="tarifa-number" *ngIf="viajeIniciado || viajeTerminado">
           {{ obtenerNumeroTarifa() }}
         </span>
         <span class="costo-number">
@@ -63,7 +57,9 @@
       </div>
 
       <div class="payment-text">
-        <p class="payment-label-left">{{ distanceTraveled }}</p>
+        <p class="payment-label-left">
+          {{ distanciaRecorridaTotal.toFixed(2) }}
+        </p>
         <p class="payment-label-right">{{ tiempoViajeFormatted }}</p>
         <div style="clear: both"></div>
       </div>
@@ -139,18 +135,22 @@
     </div>
   </div>
 
-  <div>
+  <!--   <div *ngIf="debugButton">
     <ion-button class="debug-button" (click)="setDebug()"
-      >Debuge mode</ion-button
+      >Debug mode</ion-button
+    >
+    <ion-button class="debug-button" (click)="setSimulador()"
+      >Simular {{simularMov}}</ion-button
     >
   </div>
-  <div class="debug-container" *ngIf="debugMode">
+  <div class="debug-container" *ngIf="debugButton && debugOn">
     <div class="coordinates-container">
       <div class="coordinates-text">
-        Last: {{ lastLatitude }}, {{ lastLongitude }}
+        Last: {{ lastLatitude.toFixed(4) }}, {{ lastLongitude.toFixed(4) }}
       </div>
       <div class="coordinates-text">
-        Current: {{ currentLatitude }} , {{ currentLongitude }}
+        Current: {{ currentLatitude.toFixed(4) }} , {{
+        currentLongitude.toFixed(4) }}
       </div>
       <div class="coordinates-text">
         Distancia X Seg: {{ distanciaRecorridaSegundo.toFixed(2) }} mts.
@@ -162,11 +162,13 @@
         Distance Traveled: {{ distanceTraveled.toFixed(2) }} mts.
       </div>
       <div class="coordinates-text">
-        Speed Traveled: {{ velocidadKmXHr.toFixed(0) }} mts.
+        Speed Traveled: {{ velocidadKmXHr.toFixed(0) }} km/hr.
       </div>
     </div>
   </div>
+</ion-content>-->
 </ion-content>
+
 <ion-footer>
   <div class="footer-main">
     <ion-buttons slot="start">

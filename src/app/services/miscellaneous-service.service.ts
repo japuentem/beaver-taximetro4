@@ -6,10 +6,6 @@ import { Injectable } from '@angular/core';
 export class MiscellaneousService {
   constructor() {}
 
-  setDebug(debugMode: boolean): boolean {
-    return !debugMode;
-  }
-
   simularMovimiento(
     currentLatitude: number,
     currentLongitude: number,
