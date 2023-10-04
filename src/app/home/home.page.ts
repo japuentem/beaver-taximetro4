@@ -1,14 +1,15 @@
 import { Component } from '@angular/core';
 import { DateTimeService } from '../services/date-time-service.service';
+import { Platform } from '@ionic/angular';
+import { StatusBar } from '@capacitor/status-bar';
+import { ModalController } from '@ionic/angular';
+
 import { TarifaService } from '../services/tarifa-service.service';
 import { TaximetroService } from '../services/taximetro-service.service';
 import { GPSLocationService } from '../services/gps-location-service.service';
 import { MiscellaneousService } from '../services/miscellaneous-service.service';
-import { Platform } from '@ionic/angular';
-import { StatusBar } from '@capacitor/status-bar';
 import { DetalleViajeComponent } from '../components/detalle-viaje/detalle-viaje.component'; // Asegúrate de colocar la ruta correcta
 import { AcercaDeComponent } from '../components/acerca-de/acerca-de.component'; // Asegúrate de colocar la ruta correcta
-import { ModalController } from '@ionic/angular';
 import { InfoTarifasComponent } from '../components/info-tarifas/info-tarifas.component';
 
 declare global {
@@ -26,12 +27,12 @@ declare global {
 })
 export class HomePage {
   currentDateTime: Date;
-  nuevaFecha: string = '';
+  nuevaFecha: string = ''; // Fecha del encabezado
   viajeIniciado: boolean = false;
   viajeTerminado: boolean = false;
   taxiSelected: string | null = null;
   ubicacionActivada: boolean = false;
-  watchId: any = null;
+  watchIdLocation: any = null;
   isDay: boolean = false;
   costo_viaje: number = 0;
   radioButtonsDisabled: boolean = true;
@@ -48,21 +49,21 @@ export class HomePage {
   vecesDistancia: number = 0;
   distanciaRecorridaSegundo: number = 0;
   distanciaRecorridaTotal: number = 0;
+  distanceTraveled: number = 0;
+  velocidadKmXHr: number = 0;
   lastLatitude: number = 0;
   lastLongitude: number = 0;
   currentLatitude: number = 0;
   currentLongitude: number = 0;
-  debugMode: boolean = false;
-  distanceTraveled: number = 0;
   lastUpdateTime: number = 0;
-  velocidadKmXHr: number = 0;
   ticket: boolean = false;
-
   tiempoViaje: number = 0;
   tiempoViajeFormatted: string = '00:00:00';
   intervaloTiempo: any;
 
-  //   intervaloSimularMovimiento: any;
+  debugOn: boolean = true;
+  debugButton: boolean = true;
+  simularMov: boolean = false;
 
   constructor(
     private dateTimeService: DateTimeService,
@@ -75,8 +76,9 @@ export class HomePage {
   ) {
     this.currentDateTime = new Date();
     this.nuevaFecha = this.dateTimeService.convertirFecha(this.currentDateTime);
-    this.checkUbicacionActivada();
+
     this.initializeApp();
+    this.checkUbicacionActivada();
   }
 
   async ngOnInit() {
@@ -114,6 +116,17 @@ export class HomePage {
       this.tiempoViaje++;
       this.actualizarTiempoViajeFormatted();
     }, 1000);
+
+    const trip = {
+      time: new Date(),
+      distance: 0,
+      type: this.distanciaRecorridaTotal ? 'distance' : 'time',
+    };
+
+    // Store the trip in localStorage
+    const trips = JSON.parse(localStorage.getItem('trips') || '[]');
+    trips.push(trip);
+    localStorage.setItem('trips', JSON.stringify(trips));
   }
 
   terminarViaje() {
@@ -128,7 +141,6 @@ export class HomePage {
     this.vecesDistancia = 0;
     this.detenerCurrentPosition();
     this.ticket = true;
-    // clearInterval(this.intervaloSimularMovimiento);
   }
 
   reiniciarTaximetro() {
@@ -146,11 +158,16 @@ export class HomePage {
     this.cobroPorDistancia = false;
     this.distanciaRecorridaSegundo = 0;
     this.distanciaRecorridaTotal = 0;
+    this.distanceTraveled = 0;
+    this.velocidadKmXHr = 0;
     clearInterval(this.intervaloCostoTiempo);
     clearInterval(this.intervaloCostoDistancia);
+    clearInterval(this.intervaloTiempo);
     this.acumuladoTiempo = 0;
     this.acumuladoDistancia = 0;
     this.actualizarTiempoViajeFormatted();
+
+    this.lastUpdateTime = 0;
   }
 
   tipoTarifa(): boolean {
@@ -173,22 +190,6 @@ export class HomePage {
     this.costo_viaje = this.tarifa;
   }
 
-  /*
-  async validarTarifa(opcion: number) {
-    try {
-      const { tarifa, aumento } = await this.tarifaService.validarTarifa(
-        opcion,
-        this.currentDateTime,
-        this.taxiSelected
-      );
-      this.tarifa = tarifa;
-      this.aumento = aumento;
-    } catch (error) {
-      console.error('Error al validar tarifa:', error);
-      // Manejar el error si es necesario
-    }
-  }
- */
   validarTarifa(opcion: number) {
     const { tarifa, aumento } = this.tarifaService.validarTarifa(
       opcion,
@@ -209,6 +210,9 @@ export class HomePage {
     this.obtenerCurrentPosition();
     this.intervaloCostoDistancia = setInterval(() => {
       // this.actualizarCostoPorDistancia();
+      if (this.simularMov) {
+        this.simularMovimiento();
+      }
     }, 1000);
   }
 
@@ -230,7 +234,7 @@ export class HomePage {
   }
 
   obtenerCurrentPosition() {
-    this.watchId = this.gpsLocationService
+    this.watchIdLocation = this.gpsLocationService
       .startPositionUpdates()
       .subscribe((positionData: any) => {
         const options: PositionOptions = {
@@ -245,102 +249,45 @@ export class HomePage {
         this.currentLongitude = positionData.currentLongitude;
         this.distanceTraveled = positionData.distanceTraveled;
 
-        // Calcular velocidad en km/hr
-        const tiempoTranscurridoSegundos =
-          (new Date().getTime() - this.lastUpdateTime) / 1000; // Convertir a segundos
-        const distanciaRecorridaKm = this.distanceTraveled / 1000; // Convertir a kilómetros
-        const velocidadKmPorHora =
-          distanciaRecorridaKm / (tiempoTranscurridoSegundos / 3600);
-
-        this.velocidadKmXHr = velocidadKmPorHora;
-        // Guardar el tiempo actual como referencia para el próximo cálculo de velocidad
-        this.lastUpdateTime = new Date().getTime();
-        /*
-        this.intervaloSimularMovimiento = setInterval(() => {
-          const simulatedPosition = this.miscellaneousService.simularMovimiento(
-            this.currentLatitude,
-            this.currentLongitude,
-            this.lastLatitude,
-            this.lastLongitude
-          );
-
-          this.lastLatitude = simulatedPosition.lastLatitude;
-          this.lastLongitude = simulatedPosition.lastLongitude;
-          this.currentLatitude = simulatedPosition.currentLatitude;
-          this.currentLongitude = simulatedPosition.currentLongitude;
-        }, 1000);
- */
         if (this.lastLatitude === 0 && this.lastLongitude === 0) {
           this.lastLatitude = this.currentLatitude;
           this.lastLongitude = this.currentLongitude;
         }
 
-        this.distanciaRecorridaSegundo += positionData.distanceTraveled;
-        this.distanciaRecorridaTotal += positionData.distanceTraveled;
+        console.log(
+          'positionData.distanceTraveled: ',
+          positionData.distanceTraveled
+        );
 
-        // if (this.distanciaRecorridaSegundo >= 242) {
-        if (this.distanceTraveled >= 250) {
-          this.validarTarifa(1);
-          this.costo_viaje += this.aumento;
-          this.vecesDistancia++;
+        if (
+          this.lastLatitude !== this.currentLatitude &&
+          this.lastLongitude !== this.currentLongitude
+        ) {
+          this.distanciaRecorridaSegundo += positionData.distanceTraveled;
+          this.distanciaRecorridaTotal += positionData.distanceTraveled;
 
-          this.cobroPorTiempo = false;
-          this.cobroPorDistancia = true;
-          this.distanciaRecorridaSegundo = 0;
-          this.reiniciarTimers();
+          if (this.distanciaRecorridaSegundo >= 250) {
+            // if (this.distanceTraveled >= 250) {
+            this.validarTarifa(1);
+            this.costo_viaje += this.aumento;
+            this.vecesDistancia++;
+
+            this.cobroPorTiempo = false;
+            this.cobroPorDistancia = true;
+            this.distanciaRecorridaSegundo = 0;
+            this.reiniciarTimers();
+          }
+
+          // Llamar a la función para actualizar los datos reales de posición y cálculos
+          this.actualizarDatosPosition(positionData.distanceTraveled);
         }
       });
   }
 
-  /*
-  actualizarCostoPorDistancia() {
-    let distanciaEnMetros = this.gpsLocationService.calcularDistancia(
-      this.lastLatitude,
-      this.lastLongitude,
-      this.currentLatitude,
-      this.currentLongitude
-    );
-    console.log('distanciaEnMetros: ', distanciaEnMetros);
-    this.textoCoordenadas = distanciaEnMetros.toString();
-
-    this.distanciaRecorridaSegundo += distanciaEnMetros;
-    this.distanciaRecorridaTotal += distanciaEnMetros;
-    distanciaEnMetros = 0;
-
-    if (this.distanciaRecorridaSegundo >= 242) {
-      this.validarTarifa(1);
-      this.costo_viaje += this.aumento;
-      this.vecesDistancia++;
-
-      this.cobroPorTiempo = false;
-      this.cobroPorDistancia = true;
-      this.distanciaRecorridaSegundo = 0;
-      this.reiniciarTimers();
-    }
-  }
-
-  calcularDistanciaRecorrida(): number {
-    const distanciaEnMetros = this.gpsLocationService.calcularDistancia(
-      this.lastLatitude,
-      this.lastLongitude,
-      this.currentLatitude,
-      this.currentLongitude
-    );
-
-    if (distanciaEnMetros > 0) {
-      this.lastDistance = distanciaEnMetros;
-      this.distanciaRecorridaSegundo += distanciaEnMetros;
-      this.distanciaRecorridaTotal += distanciaEnMetros;
-    }
-
-    return this.lastDistance;
-  }
- */
   detenerCurrentPosition() {
-    if (this.watchId) {
-      this.watchId.unsubscribe(); // Detiene la actualización de la posición
-      this.watchId = null; // Restablece el valor de la variable watchId a null
-      // this.speed = 0; // Restablece el valor de la velocidad (si tienes una variable speed)
+    if (this.watchIdLocation) {
+      this.watchIdLocation.unsubscribe();
+      this.watchIdLocation = null;
     }
   }
 
@@ -352,7 +299,19 @@ export class HomePage {
   }
 
   setDebug() {
-    this.debugMode = this.miscellaneousService.setDebug(this.debugMode);
+    if (this.debugOn) {
+      this.debugOn = false;
+    } else {
+      this.debugOn = true;
+    }
+  }
+
+  setSimulador() {
+    if (this.simularMov) {
+      this.simularMov = false;
+    } else {
+      this.simularMov = true;
+    }
   }
 
   initializeApp() {
@@ -376,7 +335,7 @@ export class HomePage {
         acumuladoTiempo: this.acumuladoTiempo.toFixed(2),
         acumuladoDistancia: this.acumuladoDistancia.toFixed(2),
         total: this.total.toFixed(2),
-        distanceTraveled: this.distanceTraveled,
+        distanceTraveled: this.distanciaRecorridaTotal.toFixed(2),
         tiempoViajeFormatted: this.tiempoViajeFormatted,
       },
     });
@@ -412,5 +371,97 @@ export class HomePage {
 
   private padZero(value: number): string {
     return value < 10 ? `0${value}` : value.toString();
+  }
+
+  simularMovimiento() {
+    const minSpeed = 1; // Mínima velocidad en metros por segundo
+    const maxSpeed = 15; // Máxima velocidad en metros por segundo
+
+    const distanciaRecorrida = Math.random() * (maxSpeed - minSpeed) + minSpeed;
+
+    const bearing = Math.random() * 360; // Dirección aleatoria en grados
+    const earthRadius = 6371000; // Radio de la Tierra en metros
+    const lat1 = this.currentLatitude;
+    const lon1 = this.currentLongitude;
+
+    const lat2 = lat1 + (distanciaRecorrida / earthRadius) * (180 / Math.PI);
+    const lon2 =
+      lon1 +
+      ((distanciaRecorrida / earthRadius) * (180 / Math.PI)) /
+        Math.cos((lat1 * Math.PI) / 180);
+
+    // Actualizar las coordenadas actuales simuladas
+    this.currentLatitude = lat2;
+    this.currentLongitude = lon2;
+
+    // Actualizar la distancia recorrida simulada
+    this.distanciaRecorridaSegundo += distanciaRecorrida;
+    this.distanciaRecorridaTotal += distanciaRecorrida;
+    this.distanceTraveled += distanciaRecorrida;
+
+    if (this.distanciaRecorridaSegundo >= 242) {
+      // if (this.distanceTraveled >= 250) {
+      this.validarTarifa(1);
+      this.costo_viaje += this.aumento;
+      this.vecesDistancia++;
+
+      this.cobroPorTiempo = false;
+      this.cobroPorDistancia = true;
+      this.distanciaRecorridaSegundo = 0;
+      this.reiniciarTimers();
+    }
+
+    // Llamar a la función para actualizar los datos reales de posición y cálculos
+    this.actualizarDatosPosition(distanciaRecorrida);
+  }
+
+  actualizarDatosPosition(distanciaRecorrida: number) {
+    const timeElapsedSeconds = (Date.now() - this.lastUpdateTime) / 1000;
+
+    // Actualizar valores
+    this.distanceTraveled = distanciaRecorrida;
+    this.lastLatitude = this.currentLatitude;
+    this.lastLongitude = this.currentLongitude;
+
+    // Actualizar la velocidad en km/hr
+    if (timeElapsedSeconds > 0) {
+      this.velocidadKmXHr = (this.distanceTraveled / timeElapsedSeconds) * 3.6; // Convertir a km/hr
+    }
+
+    this.lastUpdateTime = Date.now();
+  }
+
+  generateMonthlyReport() {
+    const trips = JSON.parse(localStorage.getItem('trips') || '[]');
+
+    // Filter trips for the current month
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    const filteredTrips = trips.filter((trip) => {
+      const tripDate = new Date(trip.time);
+      return (
+        tripDate.getMonth() === currentMonth &&
+        tripDate.getFullYear() === currentYear
+      );
+    });
+
+    // Calculate total distance and time for the month
+    let totalDistance = 0;
+    let totalTime = 0;
+
+    filteredTrips.forEach((trip: { type: string; distance: number }) => {
+      if (trip.type === 'distance') {
+        totalDistance += trip.distance;
+      } else {
+        // Assuming you have a way to calculate time for each trip
+        totalTime += calculateTimeForTrip(trip);
+      }
+    });
+
+    // Display or return the totalDistance and totalTime as needed
+    console.log('Total Distance for the Month:', totalDistance);
+    console.log('Total Time for the Month:', totalTime);
   }
 }
